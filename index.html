@@ -224,6 +224,7 @@
     const userMsg = input.value.trim();
     if(!userMsg) return;
 
+    // Add user message to UI
     chat.innerHTML += `<div style="color:var(--cyan); margin-top:15px;">>> USER: ${userMsg.toUpperCase()}</div>`;
     input.value = "";
     chat.scrollTop = chat.scrollHeight;
@@ -232,13 +233,14 @@
         const response = await fetch("/api/chat", {
             method: "POST",
             headers: { 
-                "Content-Type": "application/json" // THIS MUST BE HERE
+                "Content-Type": "application/json" // Tells the server to expect JSON
             },
-            body: JSON.stringify({ message: userMsg }) // 'message' must be lowercase
+            body: JSON.stringify({ message: userMsg }) // Sends the actual message
         });
 
         const data = await response.json();
-        // Look for 'response' because that is what our chat.js sends back
+        
+        // Use data.response because that's what we named it in chat.js
         const reply = data.response || "NEURAL LINK STABLE: NO DATA";
 
         setTimeout(() => {
@@ -246,7 +248,8 @@
             chat.scrollTop = chat.scrollHeight;
         }, 500);
     } catch (error) {
-        chat.innerHTML += `<div style="color:red; margin-top:10px;">>> ERROR: NEURAL LINK STABILIZING... PLEASE RETRY.</div>`;
+        console.error("Fetch Error:", error);
+        chat.innerHTML += `<div style="color:red; margin-top:10px;">>> ERROR: UPLINK FAILED. PLEASE RETRY.</div>`;
     }
 }
 </script>
