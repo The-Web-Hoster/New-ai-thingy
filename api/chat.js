@@ -6,41 +6,40 @@ export default async function handler(req, res) {
   try {
     const { message } = req.body;
 
-    // THE NEW 2026 ROUTER URL
+    // Use the v1/chat/completions endpoint - the most stable 2026 standard
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/meta-llama/Llama-3.2-3B-Instruct",
+      "https://router.huggingface.co/hf-inference/v1/chat/completions",
       {
         headers: { 
-          Authorization: `Bearer ${process.env.HF_TOKEN}`,
+          "Authorization": `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json"
         },
         method: "POST",
         body: JSON.stringify({ 
-          inputs: message,
-          options: { wait_for_model: true }
+          model: "meta-llama/Llama-3.2-3B-Instruct",
+          messages: [{ role: "user", content: message }],
+          max_tokens: 500
         }),
       }
     );
 
     const result = await response.json();
 
-    let aiMessage = "";
-
-    // The Router usually returns the same array format, 
-    // but we add a check for 'choices' just in case it's in OpenAI-style format
-    if (Array.isArray(result) && result[0]?.generated_text) {
-      aiMessage = result[0].generated_text;
-    } else if (result.choices && result.choices[0]?.message?.content) {
-      aiMessage = result.choices[0].message.content;
-    } else if (result.error) {
-      aiMessage = `System Warming Up: ${result.error}`;
-    } else {
-      aiMessage = "Neural Link unstable. Please re-send message.";
+    // Check for the OpenAI-style response format
+    if (result.choices && result.choices[0]?.message?.content) {
+      res.status(200).json({ response: result.choices[0].message.content });
+    } 
+    else if (result.error) {
+      res.status(200).json({ response: `AI warming up: ${result.error.message || result.error}` });
+    } 
+    else {
+      // Log the result to Vercel so you can see it if it fails
+      console.log("Unexpected Result:", result);
+      res.status(200).json({ response: "Neural Link unstable. Please try again." });
     }
 
-    res.status(200).json({ response: aiMessage });
-
   } catch (error) {
-    res.status(500).json({ response: "CRITICAL UPLINK ERROR: Connection Reset." });
+    console.error("FETCH ERROR:", error);
+    res.status(500).json({ response: `CRITICAL UPLINK ERROR: ${error.message}` });
   }
 }
