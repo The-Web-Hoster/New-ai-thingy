@@ -1,39 +1,44 @@
 export default async function handler(req, res) {
-  // 1. Tell the browser we are sending JSON no matter what
   res.setHeader('Content-Type', 'application/json');
-
   try {
     const { message } = req.body;
 
-    // Use a model that is ALMOST ALWAYS online
+    // We are switching to Gemma 2 - it's the most reliable for the 2026 Router free tier
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/models/meta-llama/Llama-3.2-3B-Instruct",
+      "https://router.huggingface.co/hf-inference/models/google/gemma-2-2b-it",
       {
         headers: { 
-          "Authorization": `Bearer ${process.env.HF_TOKEN}`,
+          "Authorization": `Bearer ${process.env.HF_TOKEN}`, 
           "Content-Type": "application/json" 
         },
         method: "POST",
-        body: JSON.stringify({ inputs: message }),
+        body: JSON.stringify({ 
+          inputs: message,
+          options: { wait_for_model: true }
+        }),
       }
     );
 
-    const rawText = await response.text();
+    const text = await response.text();
     
-    // 2. Check if the response is actually HTML (the "N" error culprit)
-    if (rawText.startsWith("<!DOCTYPE") || rawText.includes("Not Found")) {
+    // THE ULTIMATE DEBUG: If it's not JSON, we see the first 50 characters of the webpage
+    if (text.trim().startsWith("<")) {
       return res.status(200).json({ 
-        response: "GATEWAY ERROR: Hugging Face sent back a webpage. Check your HF_TOKEN in Vercel settings." 
+        response: `HF ERROR: Sent HTML. Status: ${response.status}. Preview: ${text.substring(0, 50)}` 
       });
     }
 
-    const data = JSON.parse(rawText);
-    const aiResponse = Array.isArray(data) ? data[0].generated_text : data.choices[0].message.content;
+    const data = JSON.parse(text);
     
-    return res.status(200).json({ response: aiResponse });
+    if (Array.isArray(data) && data[0]?.generated_text) {
+      return res.status(200).json({ response: data[0].generated_text });
+    } else if (data.error) {
+      return res.status(200).json({ response: `AI Busy: ${data.error}` });
+    }
+
+    return res.status(200).json({ response: "Link stable, AI silent. Try again." });
 
   } catch (error) {
-    // 3. This ensures the chatbox shows the error instead of the "N" crash
-    return res.status(200).json({ response: `ROUTER ERROR: ${error.message}` });
+    return res.status(200).json({ response: `FATAL: ${error.message}` });
   }
 }
