@@ -219,37 +219,36 @@
 
     // UPDATED AI LOGIC FOR SINGLE REPOSITORY
     async function ask() {
-        const input = document.getElementById('ai-in');
-        const chat = document.getElementById('chat');
-        const userMsg = input.value.trim();
-        if(!userMsg) return;
+    const input = document.getElementById('ai-in');
+    const chat = document.getElementById('chat');
+    const userMsg = input.value.trim();
+    if(!userMsg) return;
 
-        chat.innerHTML += `<div style="color:var(--cyan); margin-top:15px;">>> USER: ${userMsg.toUpperCase()}</div>`;
-        input.value = "";
-        chat.scrollTop = chat.scrollHeight;
+    chat.innerHTML += `<div style="color:var(--cyan); margin-top:15px;">>> USER: ${userMsg.toUpperCase()}</div>`;
+    input.value = "";
+    chat.scrollTop = chat.scrollHeight;
 
-        try {
-            // RELATIVE PATH: Looks inside the same Vercel project!
-            const response = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: userMsg })
-            });
+    try {
+        const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json" // THIS MUST BE HERE
+            },
+            body: JSON.stringify({ message: userMsg }) // 'message' must be lowercase
+        });
 
-            if (!response.ok) throw new Error("Uplink failed");
+        const data = await response.json();
+        // Look for 'response' because that is what our chat.js sends back
+        const reply = data.response || "NEURAL LINK STABLE: NO DATA";
 
-            const data = await response.json();
-            const reply = data.response || "NEURAL LINK STABLE: NO DATA";
-
-            setTimeout(() => {
-                chat.innerHTML += `<div style="color:#0f0; margin-top:10px;">>> NEURAL LINK: ${reply}</div>`;
-                chat.scrollTop = chat.scrollHeight;
-            }, 500);
-        } catch (error) {
-            chat.innerHTML += `<div style="color:red; margin-top:10px;">>> ERROR: NEURAL LINK STABILIZING... PLEASE RETRY.</div>`;
-            console.error(error);
-        }
+        setTimeout(() => {
+            chat.innerHTML += `<div style="color:#0f0; margin-top:10px;">>> NEURAL LINK: ${reply}</div>`;
+            chat.scrollTop = chat.scrollHeight;
+        }, 500);
+    } catch (error) {
+        chat.innerHTML += `<div style="color:red; margin-top:10px;">>> ERROR: NEURAL LINK STABILIZING... PLEASE RETRY.</div>`;
     }
+}
 </script>
 
 </body></html>
