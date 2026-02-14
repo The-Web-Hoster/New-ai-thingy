@@ -1,13 +1,13 @@
 export default async function handler(req, res) {
-  // 1. Check if the request is a POST
+  // 1. Only allow POST requests
   if (req.method !== 'POST') {
-    return res.status(200).send("Please use the chat box on the website.");
+    return res.status(200).send("Neural Link Active. Use the website to communicate.");
   }
 
   try {
     const { message } = req.body;
-    
-    // 2. The Hugging Face Call
+
+    // 2. Call Hugging Face with the 'Wait' flag
     const response = await fetch(
       "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct",
       {
@@ -16,20 +16,29 @@ export default async function handler(req, res) {
           "Content-Type": "application/json"
         },
         method: "POST",
-        body: JSON.stringify({ inputs: message }),
+        body: JSON.stringify({ 
+          inputs: message,
+          options: { wait_for_model: true } // Tells the AI to wake up instead of crashing
+        }),
       }
     );
 
     const result = await response.json();
-    
-    // 3. Send back the AI response
-    // Hugging Face returns an array: [{ generated_text: "..." }]
-    const aiMessage = result[0]?.generated_text || "System overloaded. Try again.";
+
+    // 3. Handle different response types from Hugging Face
+    let aiMessage = "";
+    if (Array.isArray(result) && result[0]?.generated_text) {
+      aiMessage = result[0].generated_text;
+    } else if (result.error) {
+      aiMessage = `AI nodes warming up... try again in 10 seconds. (${result.error})`;
+    } else {
+      aiMessage = "Neural Link unstable. Please re-send message.";
+    }
+
     res.status(200).json({ response: aiMessage });
 
   } catch (error) {
-    // This will show exactly what failed in your Vercel Logs
-    console.error("CRASH DETAILS:", error);
-    res.status(500).json({ response: "UPLINK CRASH: Server internal error." });
+    console.error("UPLINK ERROR:", error);
+    res.status(500).json({ response: "CRITICAL UPLINK ERROR: Check Vercel Logs." });
   }
 }
