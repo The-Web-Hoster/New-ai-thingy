@@ -2,7 +2,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://backend-ai-kappa.vercel.app https://api.open-meteo.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://backend-ai-kappa.vercel.app https://api.open-meteo.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://images.unsplash.com https://upload.wikimedia.org data:;">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://api.open-meteo.com; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://api.open-meteo.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://images.unsplash.com https://upload.wikimedia.org data:;">
     <title>UAE Climate Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
@@ -109,7 +109,7 @@
     <section id="data" class="section">
         <div class="card">
             <h2 style="color:var(--purple); font-family: 'Orbitron'; margin-bottom: 20px;">Why This Research Matters</h2>
-            <p style="line-height: 1.8; font-size: 1.2em; color: #eee; margin-bottom: 15px;">Carbon management is the defining challenge for the UAE's future. The "Thermal Trap" phenomenon means that as global temperatures rise, the UAE requires significantly more energy for district cooling and desalination (which provides 90% of our water). Currently, AC alone consumes up to 70% of peak electricity. Breaking this cycle via the **UAE Net Zero 2050** strategic initiative is critical for preserving our coastline and ensuring water security for future generations.</p>
+            <p style="line-height: 1.8; font-size: 1.2em; color: #eee; margin-bottom: 15px;">Carbon management is the defining challenge for the UAE's future. Breaking the cycle via the **UAE Net Zero 2050** strategic initiative is critical for preserving our coastline and ensuring water security for future generations.</p>
         </div>
         <div class="card">
             <h2 style="font-family:'Orbitron'; color:var(--cyan); margin-bottom:35px; text-align:center;">Climate Data</h2>
@@ -124,24 +124,11 @@
                 <div class="box"><h4>SUNSET</h4><p id="ss">--:--</p></div>
             </div>
         </div>
-        
-        <div class="card">
-            <h2 style="color:var(--cyan); font-family: 'Orbitron'; margin-bottom: 20px;">UAE Regional Climate Analysis</h2>
-            <p style="line-height: 1.8; font-size: 1.2em; color: #eee; margin-bottom: 15px;">The United Arab Emirates faces a unique climate profile defined by "Hyper-Arid conditions". During peak summer, the desert acts as a massive heat sink, with temperatures regularly hitting 48-50°C. Coastal humidity, driven by the warm waters of the Arabian Gulf, often reaches 90%, creating a dangerous "Heat Index" where evaporation cooling for the human body becomes impossible. The Shamal Winds further complicate this by introducing heavy particulate matter from the interior desert, impacting air quality across the nation.</p>
-        </div>
-
-        <div class="card">
-            <h2 style="color:var(--cyan); font-family: 'Orbitron'; margin-bottom: 25px;">UV RADIATION PROTOCOLS</h2>
-            <div class="uv-row" style="border-color: #00ff88; color: #00ff88;">0-2 (Low): Safe to be outside. Minimal sun protection needed.</div>
-            <div class="uv-row" style="border-color: #ffff00; color: #ffff00;">3-5 (Moderate): Some risk. Shade, sunscreen, and sunglasses are smart.</div>
-            <div class="uv-row" style="border-color: #ffaa00; color: #ffaa00;">6-10 HIGH: Full protection & SPF 30+ mandatory.</div>
-            <div class="uv-row" style="border-color: #ff0000; color: #ff0000;">11+ EXTREME: HIGH RISK. Stay indoors. Burn time &lt; 10 mins.</div>
-        </div>
     </section>
 
     <section id="co2" class="section">
         <div class="card">
-            <h2 style="font-family:'Orbitron'; text-align:center; color:var(--purple); margin-bottom:40px;">CARBON SCANNER (ROW LIST)</h2>
+            <h2 style="font-family:'Orbitron'; text-align:center; color:var(--purple); margin-bottom:40px;">CARBON SCANNER</h2>
             <div class="input-row"><label>WEEKLY CAR TRAVEL (KM)</label><input type="number" id="v1" placeholder="0"></div>
             <div class="input-row"><label>WEEKLY MEAT (G)</label><input type="number" id="v2" placeholder="0"></div>
             <div class="input-row"><label>DAILY AC HOURS</label><input type="number" id="v3" placeholder="0"></div>
@@ -178,7 +165,6 @@
         fxOn = !fxOn;
         const btn = document.getElementById('fxBtn');
         btn.innerText = `VISUAL FX: ${fxOn ? 'ON' : 'OFF'}`;
-        if ("vibrate" in navigator) navigator.vibrate(50);
     }
 
     function trigger(id, btn) {
@@ -195,7 +181,6 @@
     function manualGlitch() {
         if(!fxOn) return;
         document.documentElement.classList.add('glitch-active');
-        if ("vibrate" in navigator) navigator.vibrate(120);
         setTimeout(() => { document.documentElement.classList.remove('glitch-active'); }, 600);
     }
 
@@ -215,29 +200,24 @@
     }
 
     function calc() {
-        if ("vibrate" in navigator) navigator.vibrate([100, 50, 200, 50, 500]);
+        const v1 = document.getElementById('v1');
+        const v2 = document.getElementById('v2');
+        const v3 = document.getElementById('v3');
+        const v4 = document.getElementById('v4');
+        const v5 = document.getElementById('v5');
+        const v6 = document.getElementById('v6');
+        
         const s = (Number(v1.value)*0.2) + (Number(v2.value)*0.03) + (Number(v3.value)*0.8) + (Number(v4.value)*0.1) + (Number(v5.value)*0.05) + (Number(v6.value)*250);
         const res = document.getElementById('res');
-        const flash = document.getElementById('flash-overlay');
         res.innerText = s.toFixed(2) + " KG CO2";
         
         let color = "#00ff00"; 
         if(s > 50 && s < 150) color = "#ffff00";
         else if(s >= 150) color = "#ff0000";
-        
         res.style.color = color;
-        if(fxOn) {
-            flash.style.backgroundColor = color;
-            flash.style.opacity = "0.35";
-            document.documentElement.classList.add('glitch-active');
-            setTimeout(() => { 
-                document.documentElement.classList.remove('glitch-active'); 
-                flash.style.opacity = "0";
-            }, 1200);
-        }
     }
 
-    // AI HANDSHAKE LOGIC
+    // UPDATED AI LOGIC FOR SINGLE REPOSITORY
     async function ask() {
         const input = document.getElementById('ai-in');
         const chat = document.getElementById('chat');
@@ -249,8 +229,8 @@
         chat.scrollTop = chat.scrollHeight;
 
         try {
-            // NEW VERCEL ENDPOINT
-            const response = await fetch("https://backend-ai-kappa.vercel.app/api/chat", {
+            // RELATIVE PATH: Looks inside the same Vercel project!
+            const response = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: userMsg })
@@ -266,7 +246,7 @@
                 chat.scrollTop = chat.scrollHeight;
             }, 500);
         } catch (error) {
-            chat.innerHTML += `<div style="color:red; margin-top:10px;">>> ERROR: UPLINK FAILED.</div>`;
+            chat.innerHTML += `<div style="color:red; margin-top:10px;">>> ERROR: NEURAL LINK STABILIZING... PLEASE RETRY.</div>`;
             console.error(error);
         }
     }
