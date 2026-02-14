@@ -1,36 +1,39 @@
 export default async function handler(req, res) {
+  // 1. Tell the browser we are sending JSON no matter what
   res.setHeader('Content-Type', 'application/json');
+
   try {
     const { message } = req.body;
 
+    // Use a model that is ALMOST ALWAYS online
     const response = await fetch(
-      "https://router.huggingface.co/hf-inference/v1/chat/completions",
+      "https://router.huggingface.co/hf-inference/models/meta-llama/Llama-3.2-3B-Instruct",
       {
         headers: { 
-          "Authorization": `Bearer ${process.env.HF_TOKEN}`, 
+          "Authorization": `Bearer ${process.env.HF_TOKEN}`,
           "Content-Type": "application/json" 
         },
         method: "POST",
-        body: JSON.stringify({ 
-          model: "meta-llama/Llama-3.2-3B-Instruct",
-          messages: [{ role: "user", content: message }],
-          max_tokens: 500
-        }),
+        body: JSON.stringify({ inputs: message }),
       }
     );
 
-    const data = await response.json();
-
-    if (data.choices && data.choices[0]?.message?.content) {
-      return res.status(200).json({ response: data.choices[0].message.content });
-    } 
+    const rawText = await response.text();
     
-    // If the model is loading, it looks like this in the new Router:
-    return res.status(200).json({ 
-      response: `DEBUG: ${response.status} - ${JSON.stringify(data)}` 
-    });
+    // 2. Check if the response is actually HTML (the "N" error culprit)
+    if (rawText.startsWith("<!DOCTYPE") || rawText.includes("Not Found")) {
+      return res.status(200).json({ 
+        response: "GATEWAY ERROR: Hugging Face sent back a webpage. Check your HF_TOKEN in Vercel settings." 
+      });
+    }
+
+    const data = JSON.parse(rawText);
+    const aiResponse = Array.isArray(data) ? data[0].generated_text : data.choices[0].message.content;
+    
+    return res.status(200).json({ response: aiResponse });
 
   } catch (error) {
-    return res.status(200).json({ response: `SYSTEM CRASH: ${error.message}` });
+    // 3. This ensures the chatbox shows the error instead of the "N" crash
+    return res.status(200).json({ response: `ROUTER ERROR: ${error.message}` });
   }
 }
