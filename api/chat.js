@@ -8,8 +8,8 @@ export default async function handler(req, res) {
     const { message } = req.body;
 
     // 2. Call Hugging Face with the 'Wait' flag
-    const response = await fetch(
-      "https://api-inference.huggingface.co/models/meta-llama/Llama-3.2-3B-Instruct",
+   const response = await fetch(
+      "https://router.huggingface.co/hf-inference/models/meta-llama/Llama-3.2-3B-Instruct",
       {
         headers: { 
           Authorization: `Bearer ${process.env.HF_TOKEN}`,
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         method: "POST",
         body: JSON.stringify({ 
           inputs: message,
-          options: { wait_for_model: true } // Tells the AI to wake up instead of crashing
+          options: { wait_for_model: true }
         }),
       }
     );
