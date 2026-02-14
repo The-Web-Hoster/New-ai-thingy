@@ -33,7 +33,7 @@ export default async function handler(req, res) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "Qwen/Qwen2.5-7B-Instruct",
+          model: "meta-llama/Llama-3.2-3B-Instruct",
           messages: [{ role: "user", content: message }],
           max_tokens: 300,
           temperature: 0.7
